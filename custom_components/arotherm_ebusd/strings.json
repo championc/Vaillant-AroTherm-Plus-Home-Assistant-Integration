@@ -1,6 +1,5 @@
 {
   "_version": "0.3.0",
-  "_changelog": "0.1.0 (2026-10-28) - Initial release. | 0.2.0 (2026-10-28) - Summer limit, setback mode, adaptive curve, holiday temp, read-only controller/safety values. | 0.2.1 (2026-10-28) - Signal grace period, removed day temperature, no via_device. | 0.2.2 (2026-10-28) - Version bump only. | 0.3.0 (2026-10-28) - Optional hot water (DHW) entities and option.",
   "config": {
     "step": {
       "user": {
