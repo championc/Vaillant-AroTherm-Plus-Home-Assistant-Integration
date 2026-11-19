@@ -1,0 +1,15 @@
+{
+  "domain": "arotherm_ebusd",
+  "name": "aroTHERM ebusd",
+  "codeowners": [
+    "@championc"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/championc/Vaillant-AroTherm-Plus-Home-Assistant-Integration",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/championc/Vaillant-AroTherm-Plus-Home-Assistant-Integration/issues",
+  "requirements": [],
+  "version": "0.3.0"
+}

@@ -1,58 +1,56 @@
-# Vaillant-AroTherm-Plus-Home-Assistant-Integration
-Vaillant AroTherm Plus Integration for Home Assistant, built completely by Claude. It is fully tested and working on my 5kW unit. This is fully dependent on two pieces - an ebus.de dongle connected to the local Vaillant ebusd, and ebusd. It does not need MQTT, and can make changes to SensoComfort
+# Vaillant aroTHERM plus – Home Assistant integration (ebusd)
 
-Dongle - https://ebusd.de/
-Software - https://github.com/john30/ebusd
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
+[![Validate](https://github.com/championc/Vaillant-AroTherm-Plus-Home-Assistant-Integration/actions/workflows/validate.yml/badge.svg)](https://github.com/championc/Vaillant-AroTherm-Plus-Home-Assistant-Integration/actions/workflows/validate.yml)
 
-arotherm_ebusd README - version 0.3.0 (2026-10-28)
+A **local** Home Assistant integration for the **Vaillant aroTHERM plus** air-to-water heat pump with a **sensoCOMFORT VRC 720** controller. It talks to the eBUS through [ebusd](https://github.com/john30/ebusd): no Vaillant cloud, no myVAILLANT account and no MQTT.
 
-Changelog:
-  0.1.0 (2026-10-28) - Initial release.
-  0.2.0 (2026-10-28) - Documented the new writable settings, read-only values and logbook entries.
-  0.2.1 (2026-10-28) - Signal grace period, removed day temperature, bus dropout note.
-  0.2.1 r2 (2026-10-28) - Rewritten after the live install: real entity IDs, verified
-                          values, write-test result, known issues found on the live bus
-                          (signal dropouts, corrupted values).
-  0.2.2 (2026-10-28) - Plausibility checks against corrupted bus values; compressor-running
-                       rule; updated status, known issues and changelog.
-  0.3.0 (2026-10-28) - Optional hot water (DHW) support: option, entities, settings,
-                       COP change, unverified-on-hardware note.
--->
+It gives you:
 
-# aroTHERM ebusd
+- **Live readings:** flow and return temperatures, water flow, pressure, compressor speed and modulation, the energy integral, refrigerant pressures and temperatures, fan and pump data.
+- **Performance:** electrical input and heat output, live COP, daily and monthly COP, compressor starts, run lengths and a short-cycling alarm.
+- **Controller values:** room temperature and set-point, the calculated flow target, outside temperature and controller clock drift.
+- **Settings you can change from Home Assistant:** heating curve, minimum and maximum flow temperature, setback temperature and mode, summer temperature limit, adaptive heating curve, room temperature modulation, zone mode and more. Writing is **off by default** and every write is range-checked and verified (see [How every write is protected](#how-every-write-is-protected)).
+- **Optional hot water (DHW)** support for systems with a cylinder.
 
-A local Home Assistant integration for a **Vaillant aroTHERM plus 5 kW** monobloc heat pump with a
-**sensoCOMFORT VRC 720**, read and written through **ebusd**. It uses TCP 8888 for reads and writes, and HTTP/JSON 8889 for ebusd's cache.
-No cloud and no MQTT.
+> Built with the help of Claude (Anthropic) and tested daily on a 5 kW aroTHERM plus. Other aroTHERM plus sizes use the same eBUS messages and should work, but are untested. Reports are welcome via [Issues](https://github.com/championc/Vaillant-AroTherm-Plus-Home-Assistant-Integration/issues).
 
-It is built for one installation:
+## Requirements
 
-| Part | Detail |
+| Part | Notes |
 |---|---|
-| ebusd | 26.1, Docker on 192.168.1.22, message definitions `ebusd-2.1.x/en` |
-| eBUS adapter | Adapter Shield v5/C6 at 192.168.1.25:9999 (enhanced), firmware 1.1[6911] |
-| Heat pump | `HMU00`, SW 0902 / HW 5103, eBUS address 08 |
-| Controller | `BASV3` (sensoCOMFORT VRC 720), SW 0760 / HW 7304, address 15 |
-| Also on the bus | `VWZIO` at address 76: all its sensors read −0.1 / −99, so it is ignored |
-| Home Assistant | 2026.10.4, HA Container |
+| eBUS adapter | For example the [eBUS Adapter Shield v5/C6](https://adapter.ebusd.eu/), wired to the eBUS terminals of the heat pump or controller |
+| ebusd | 26.x or later, running anywhere on your network (e.g. Docker) with the standard message definitions |
+| ebusd options | `--accesslevel=*` (needed for writes) and `--httpport=8889`. MQTT is **not** needed |
+| Heat pump | Vaillant aroTHERM plus (`HMU00`) |
+| Controller | sensoCOMFORT VRC 720 (`BASV`) |
+| Home Assistant | 2026.10 or later |
 
-Every message name it uses was taken from that ebusd's own definitions; the unit tests check this.
+Tested with: ebusd 26.1 (definitions `ebusd-2.1.x/en`), heat pump SW 0902 / HW 5103, VRC 720 SW 0760 / HW 7304, Home Assistant 2026.10 (Container).
 
-## Status (28 Oct 2026)
+## Installation
 
-| Check | Result |
-|---|---|
-| Installed version | **0.2.1** live; **0.3.0** ready to install (plausibility checks + optional hot water support) |
-| Values vs ebusd's own MQTT entities | match: flow 32.44 = 32.44 °C, heat 2.3 = 2.3 kW, input 437.6 = 437.6 W, status identical |
-| Bus load | ~15 reads/min |
-| Dry-run write | `write -c basv z1HolidayTemp 14.5` shown and logged; nothing sent ✔ |
-| Real write | 15 → 14.5 → 15, both answered `done` and verified by reading back from the controller ✔ |
-| Writes | **enabled, dry run off** (as of 14:23) |
+### HACS (recommended)
+
+1. In Home Assistant open **HACS**, then **⋮ → Custom repositories**.
+2. Add `https://github.com/championc/Vaillant-AroTherm-Plus-Home-Assistant-Integration` with type **Integration**.
+3. Search for **Vaillant aroTHERM plus (ebusd)**, open it and click **Download**.
+4. Restart Home Assistant.
+
+### Manual
+
+1. Copy the folder `custom_components/arotherm_ebusd` from this repository into your Home Assistant `config/custom_components/` folder, so you end up with `config/custom_components/arotherm_ebusd/manifest.json`.
+2. Restart Home Assistant.
+
+### Set it up
+
+1. Go to **Settings → Devices & services → Add integration** and search for **aroTHERM ebusd**.
+2. Enter the IP address of the machine running **ebusd** (not the eBUS adapter), the TCP port (default `8888`) and the HTTP/JSON port (default `8889`, or `0` to use TCP only).
+3. You get three devices: **aroTHERM plus**, **sensoCOMFORT VRC 720** and **ebusd**.
+
+Setup only reads. Nothing is written to the heat pump or controller unless you turn writing on yourself.
 
 ## Devices and entities
-
-There are three devices: **aroTHERM plus**, **sensoCOMFORT VRC 720** and **ebusd**.
-Entities added in 0.2.0 got a `heating_` prefix because the devices are in the *Heating* area.
 
 ### aroTHERM plus: main sensors
 | Entity | What it is | Source |
@@ -138,7 +136,7 @@ Entities added in 0.2.0 got a `heating_` prefix because the devices are in the *
 
 For systems where the heat pump also heats a hot water cylinder. Turn on **Hot water (DHW) installed** in the options. With it off, none of these entities exist and none of these messages are read.
 
-Entity IDs below are what HA would normally generate. Yours may get an area prefix (e.g. `heating_`).
+Entity IDs below are what Home Assistant normally generates. If your devices are in an area, some IDs may get an area prefix (for example `heating_`).
 
 | Entity | What it is | Source |
 |---|---|---|
@@ -152,6 +150,7 @@ Entity IDs below are what HA would normally generate. Yours may get an area pref
 | Diagnostic | Hot water flow target and maximum flow temperature, heat pump hot water target, hot water COP figures, hot water hours, compressor hot water run time and cycles, the controller's hot water electricity tally | |
 
 When hot water is on, ***COP today / this month* include hot water heat as well as heating**, because the electricity figure covers both.
+
 
 ## Writable settings
 
@@ -214,30 +213,27 @@ All of these are *configuration* entities, so they stay off auto-generated dashb
 - `SetMode`, `State00/01/07`, `StatusCirPump`, outside temperature and the controller clock come free from the controller's own bus traffic, via ebusd's HTTP cache.
 - About 15–20 bus reads a minute in total.
 
-## Install / upgrade
 
-The full steps, including backups, are in **INSTALL.md**.
+## Example dashboard
 
-To upgrade:
-1. Replace `<HA_CONFIG>/custom_components/arotherm_ebusd/` with the folder from the new zip (currently `arotherm_ebusd-0.3.0.zip`).
-2. Restart HA.
+The [`examples`](examples) folder has the dashboard used on the test system:
 
-The entities, options and the integration's saved electricity totals carry over.
+- `arotherm_dashboard.yaml`: paste into a new dashboard via **⋮ → Edit dashboard → ⋮ → Raw configuration editor**. It needs [apexcharts-card](https://github.com/RomRider/apexcharts-card) (from HACS) and the two cards below.
+- `heatpump-cards.js`: two small custom cards, a weather-compensation curve with the live operating point and a daily COP chart. Copy it to `config/www/heatpump-cards.js` and add `/local/heatpump-cards.js` as a **JavaScript module** under **Settings → Dashboards → ⋮ → Resources**.
 
 ## Troubleshooting
 
 | Symptom | Check |
 |---|---|
-| "Cannot connect to ebusd" during setup | ebusd's host is **192.168.1.22**, not the adapter (.25). Test with `Test-NetConnection 192.168.1.22 -Port 8888`. |
-| "The HTTP/JSON port did not answer" | ebusd needs `--httpport=8889`, plus `8889:8889` in the compose `ports:`. Or set the HTTP port to 0 to use TCP only. |
-| Everything unavailable | *ebusd connected* is off. It recovers on its own, with one error line and one "recovered" line in the log. |
-| Bus values unavailable, ebusd connected on | The signal has been lost for more than 2 minutes. Shorter dropouts are only counted. |
-| One value unavailable | Download diagnostics and look at `messages.<circuit>.<name>.last_error`. |
+| "Cannot connect to ebusd" during setup | Use the address of the machine running ebusd, not the eBUS adapter. Check that port 8888 is reachable from Home Assistant. |
+| "The HTTP/JSON port did not answer" | Start ebusd with `--httpport=8889` (and publish the port if ebusd runs in Docker), or set the HTTP port to 0 to use TCP only. |
+| Everything unavailable | *ebusd connected* is off. It recovers on its own. |
+| Bus values unavailable, ebusd connected on | The eBUS signal has been lost for more than 2 minutes. Shorter dropouts are ridden through. |
+| One value unavailable | Download diagnostics and look at `messages.<circuit>.<name>.last_error`. Your ebusd definitions may name that message differently. |
 | COP shows *unknown* | Normal while the compressor is off or below 100 W. |
 | A write raised "read back …" | The controller didn't accept the value. Nothing else was changed. |
-| Options form shows `writes_enabled` instead of a label | Restart HA to reload the translations. |
 
-**Diagnostics:** *Settings → Devices & services → aroTHERM ebusd → ⋮ → Download diagnostics*. It includes ebusd info and state, every message's value, age and last error, derived state, bus reads per minute and the write log.
+**Diagnostics:** *Settings → Devices & services → aroTHERM ebusd → ⋮ → Download diagnostics*. It includes ebusd info, every message's value, age and last error, bus reads per minute and the write log. Please attach it to any issue you open.
 
 **Debug logging:**
 ```yaml
@@ -246,39 +242,19 @@ logger:
     custom_components.arotherm_ebusd: debug
 ```
 
-## Known issues
+## Known limitations
 
-- **Hot water support is untested on real hardware.** This system has no cylinder: the cylinder sensor answers `empty` and the heat pump's sensor −99. Message names and value lists come from ebusd's definitions, and the tests use synthetic values.
+- **Hot water support is untested on real hardware.** The test system has no cylinder. Check values against your controller and try every hot water setting in **dry run** first.
+- **Quick veto from the climate entity is experimental.** Try it in dry run first.
+- **Day temperature** (`z1DayTemp`) can't be decoded with the current ebusd definitions on the test controller, so it isn't offered.
+- **Heating circuit status** and **error codes** are shown as the raw numbers ebusd reports.
+- **eBUS dropouts and corrupted values** happen on some installations. Implausible readings are rejected (see *Plausibility checks* above), and short signal dropouts don't make entities unavailable.
+- If you upgrade ebusd's message definitions, some message names may change. Check diagnostics afterwards.
 
-  On a system with a cylinder:
-  - Check the values against the controller first.
-  - Try every hot water setting in **dry run** before writing for real.
-  - The meaning of *One-off cylinder charge* (`HwcSFMode = load`) is taken from the value name only.
+## Disclaimer
 
-- **The eBUS signal drops out often.** About 10 times an hour, for 15–60 s each time; ebusd's own `signal` topic shows the same, so it isn't caused by this integration. 0.2.1 keeps values available through dropouts shorter than 2 minutes.
+This is an independent community project. It is not affiliated with, endorsed by or supported by Vaillant. Changing heat pump settings is at your own risk: keep writing disabled until you're comfortable, and use dry run to see exactly what would be sent.
 
-  Things to check on your side: the adapter firmware update (1.1[6911] installed, 1[6a1a] available), the adapter's network link, its power supply and the eBUS wiring.
-- **The bus sometimes delivers corrupted values around these dropouts.** Seen on 28 Oct, and ebusd's own MQTT entities show the same corrupt values:
-  - *Compressor modulation* **142.06 %** at 14:55:32, with speed 0 and 16 W input.
-  - *Compressor starts* **2273** instead of 6027 at 14:57:56.
+## Licence
 
-  **Fixed in 0.2.2.** Both are now rejected; the tests replay these exact readings.
-
-  **Left over from 0.2.1, which was running when they happened:**
-  - *Compressor starts today / this month* restarted from 0 at 14:58 on 28 Oct. Today's count corrects itself at midnight; this month's count stays low until 1 Nov.
-  - The false 1.7-minute run is stored as *Last run length*. *Short cycling* clears itself an hour after that run.
-  - The long-term statistics of `sensor.arotherm_plus_compressor_starts_lifetime` (and the old `sensor.ebusd_hmu_compressorstarts`) recorded the dip to 2273 as a meter reset. You can correct that under *Developer tools → Statistics → Adjust sum*.
-- **Partial first day and month.** *COP today / this month* and *electricity today / this month* only count from install (09:24 on 28 Oct). *Heat produced today* comes from the heat pump and counts from midnight, so today's COP is overstated. The `partial_day` attribute flags this until midnight.
-- **Day temperature:** `z1DayTemp` answers `ERR: invalid position in decode` on this controller with the current definitions, so it isn't offered. The leftover `number.sensocomfort_vrc_720_day_temperature` from 0.1.0 can be deleted.
-- **Heating circuit status** is shown as a raw number; its meaning isn't defined by ebusd.
-- **Error codes** are the raw numbers ebusd reports. Whether they map one-to-one to F.xxx codes isn't verified.
-- **Upgrading definitions:** if you upgrade ebusd's message definitions, some names may change. Check diagnostics afterwards.
-
-## Changelog
-
-See **CHANGELOG.md**. In short:
-- **0.1.0:** first release.
-- **0.2.0:** summer limit, setback mode, adaptive curve and holiday temperature; read-only controller and safety values; logbook entries for writes.
-- **0.2.1:** 2-minute signal grace period; day temperature removed; deprecated device link removed.
-- **0.2.2:** plausibility checks against corrupted bus values; stricter compressor-running rule.
-- **0.3.0:** optional hot water (DHW) support.
+[MIT](LICENSE)

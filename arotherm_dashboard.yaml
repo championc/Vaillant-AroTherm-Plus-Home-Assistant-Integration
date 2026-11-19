@@ -1,0 +1,304 @@
+views:
+- max_columns: 4
+  path: arotherm
+  sections:
+  - cards:
+    - badges:
+      - entity: sensor.arotherm_plus_status
+        show_state: true
+        type: entity
+      heading: At a glance
+      icon: mdi:heat-pump
+      type: heading
+    - entities:
+      - entity: sensor.arotherm_plus_flow_temperature
+        icon: mdi:thermometer-chevron-up
+        name: Flow
+      - entity: sensor.arotherm_plus_return_temperature
+        icon: mdi:thermometer-chevron-down
+        name: Return
+      - entity: sensor.arotherm_plus_flow_return_difference
+        icon: mdi:delta
+        name: Flow / return ΔT
+      - entity: sensor.sensocomfort_vrc_720_room_temperature
+        icon: mdi:home-thermometer
+        name: Indoor actual
+      - entity: sensor.sensocomfort_vrc_720_room_setpoint
+        icon: mdi:home-thermometer-outline
+        name: Indoor requested
+      - entity: sensor.arotherm_plus_outside_temperature
+        icon: mdi:thermometer
+        name: Outdoors
+      - entity: sensor.arotherm_plus_water_flow_rate
+        icon: mdi:waves-arrow-right
+        name: Water flow
+      - entity: sensor.arotherm_plus_system_water_pressure
+        name: System Water Pressure
+      - entity: sensor.arotherm_plus_compressor_speed
+        icon: mdi:sine-wave
+        name: Compressor speed
+      - entity: sensor.arotherm_plus_compressor_modulation
+        icon: mdi:percent
+        name: Compressor modulation
+      - entity: sensor.arotherm_plus_compressor_outlet_temperature
+        icon: mdi:thermometer-high
+        name: Compressor outlet
+      - entity: sensor.arotherm_plus_energy_integral
+        name: Energy integral
+        icon: mdi:sigma
+      type: entities
+    type: grid
+  - cards:
+    - heading: Estimated performance
+      icon: mdi:flash
+      type: heading
+    - entity: sensor.arotherm_plus_electrical_input
+      grid_options:
+        columns: 6
+      icon: mdi:flash
+      name: Power
+      type: tile
+    - entity: sensor.arotherm_plus_heat_output
+      grid_options:
+        columns: 6
+      icon: mdi:radiator
+      name: Heat output
+      type: tile
+    - entity: sensor.arotherm_plus_cop_live
+      grid_options:
+        columns: 6
+      icon: mdi:gauge
+      name: COP now
+      type: tile
+    - entity: sensor.arotherm_plus_cop_today
+      grid_options:
+        columns: 6
+      icon: mdi:gauge-full
+      name: COP today
+      type: tile
+    - entities:
+      - entity: sensor.arotherm_plus_heat_produced_today
+        icon: mdi:radiator
+        name: Heat produced
+      - entity: sensor.arotherm_plus_electricity_used_today
+        icon: mdi:flash
+        name: Electricity used
+      - entity: sensor.arotherm_plus_environmental_energy_today
+        icon: mdi:weather-windy
+        name: Free energy from the air
+      - entity: sensor.arotherm_plus_compressor_starts_today
+        icon: mdi:restart
+        name: Compressor starts
+      - entity: sensor.arotherm_plus_compressor_run_time_today
+        icon: mdi:timer-outline
+        name: Compressor run time
+      title: Today
+      type: entities
+    - days: 7
+      electric: sensor.arotherm_plus_electrical_input
+      heat: sensor.arotherm_plus_heat_output
+      mode: summary
+      title: Last 7 days
+      type: custom:heatpump-daily-card
+      heat_scale: 1000
+    type: grid
+  - cards:
+    - heading: Weather compensation
+      icon: mdi:chart-bell-curve-cumulative
+      type: heading
+    - curve: number.sensocomfort_vrc_720_heating_curve
+      desired: sensor.sensocomfort_vrc_720_heating_circuit_flow_target
+      flow: sensor.arotherm_plus_flow_temperature
+      max_flow: number.sensocomfort_vrc_720_maximum_flow_temperature
+      min_flow: number.sensocomfort_vrc_720_minimum_flow_temperature
+      night_set: number.sensocomfort_vrc_720_night_setback_temperature
+      outdoor: sensor.arotherm_plus_outside_temperature
+      room_set: sensor.sensocomfort_vrc_720_room_setpoint
+      title: Heating curve · VRC 720
+      type: custom:heatpump-curve-card
+    - graph_span: 24h
+      header:
+        colorize_states: true
+        show: true
+        show_states: true
+        title: Temperatures · 24 hours
+      series:
+      - color: '#2196f3'
+        curve: stepline
+        entity: sensor.arotherm_plus_flow_temperature
+        group_by:
+          duration: 5min
+          func: avg
+        name: Flow
+        stroke_width: 2
+        transform: 'return (x < 0 || x > 90) ? null : x;'
+      - color: '#ffb300'
+        curve: stepline
+        entity: sensor.arotherm_plus_return_temperature
+        group_by:
+          duration: 5min
+          func: avg
+        name: Return
+        stroke_width: 2
+        transform: 'return (x < 0 || x > 90) ? null : x;'
+      - color: '#9e9e9e'
+        curve: stepline
+        entity: sensor.sensocomfort_vrc_720_heating_circuit_flow_target
+        name: Target
+        opacity: 0.7
+        stroke_width: 1
+        transform: 'return (x < 0 || x > 90) ? null : x;'
+      - entity: sensor.sensocomfort_vrc_720_room_temperature
+        name: Indoor
+        color: '#66bb6a'
+        stroke_width: 2
+        curve: smooth
+        transform: 'return (x < -40 || x > 60) ? null : x;'
+        group_by:
+          func: avg
+          duration: 10min
+      - entity: sensor.arotherm_plus_outside_temperature
+        name: Outdoor
+        color: '#ab47bc'
+        stroke_width: 2
+        curve: smooth
+        transform: 'return (x < -40 || x > 60) ? null : x;'
+        group_by:
+          func: avg
+          duration: 10min
+      type: custom:apexcharts-card
+      update_interval: 1min
+      yaxis:
+      - min: ~0
+        max: ~50
+        decimals: 0
+        apex_config:
+          tickAmount: 5
+    column_span: 1
+    type: grid
+  - cards:
+    - heading: Daily estimated COP
+      icon: mdi:chart-bar
+      type: heading
+    - days: 7
+      electric: sensor.arotherm_plus_electrical_input
+      heat: sensor.arotherm_plus_heat_output
+      mode: bars
+      title: Daily estimated COP
+      type: custom:heatpump-daily-card
+      heat_scale: 1000
+    - graph_span: 24h
+      header:
+        colorize_states: true
+        show: true
+        show_states: true
+        title: Heat output vs electricity · 24 hours
+      series:
+      - color: '#ff7043'
+        entity: sensor.arotherm_plus_heat_output
+        group_by:
+          duration: 5min
+          func: avg
+        name: Heat output
+        opacity: 0.3
+        stroke_width: 2
+        transform: return x;
+        type: area
+        unit: kW
+        yaxis_id: kw
+      - entity: sensor.arotherm_plus_electrical_input
+        name: Electricity
+        color: '#42a5f5'
+        stroke_width: 2
+        transform: 'return (x < 0 || x > 6000) ? null : x / 1000;'
+        unit: kW
+        yaxis_id: kw
+        group_by:
+          func: avg
+          duration: 5min
+      - entity: sensor.arotherm_plus_outside_temperature
+        name: Outdoor
+        color: '#ab47bc'
+        stroke_width: 2
+        curve: smooth
+        yaxis_id: temp
+        transform: 'return (x < -40 || x > 60) ? null : x;'
+        group_by:
+          func: avg
+          duration: 10min
+      type: custom:apexcharts-card
+      update_interval: 1min
+      yaxis:
+      - id: kw
+        decimals: 1
+        min: 0
+        apex_config:
+          title:
+            text: kW
+      - id: temp
+        opposite: true
+        decimals: 0
+        min: ~-5
+        max: ~20
+        apex_config:
+          title:
+            text: Outdoor °C
+    type: grid
+  - cards:
+    - heading: Health & diagnostics
+      icon: mdi:stethoscope
+      type: heading
+    - entity: sensor.arotherm_plus_system_water_pressure
+      grid_options:
+        columns: 6
+      icon: mdi:gauge
+      name: System pressure
+      type: tile
+    - entity: sensor.arotherm_plus_energy_integral
+      grid_options:
+        columns: 6
+      icon: mdi:sigma
+      name: Energy integral
+      type: tile
+    - entities:
+      - entity: sensor.arotherm_plus_refrigerant_high_pressure
+        name: High pressure
+      - entity: sensor.arotherm_plus_refrigerant_low_pressure
+        name: Low pressure
+      - entity: sensor.arotherm_plus_condensation_temperature
+        name: Condensation temp
+      - entity: sensor.arotherm_plus_evaporation_temperature
+        name: Evaporation temp
+      - entity: sensor.arotherm_plus_air_inlet_temperature
+        name: Air inlet temp
+      - entity: sensor.arotherm_plus_eev_outlet_temperature
+        name: EEV outlet temp
+      - entity: sensor.arotherm_plus_fan_speed
+        name: Fan speed
+      - entity: sensor.arotherm_plus_heating_pump_power
+        name: Circulation pump
+      title: Refrigerant circuit
+      type: entities
+    - entities:
+      - entity: sensor.arotherm_plus_compressor_hours
+        name: Compressor hours
+      - entity: sensor.arotherm_plus_compressor_starts_lifetime
+        name: Compressor starts
+      - entity: sensor.arotherm_plus_heat_produced_lifetime
+        name: Heat yield total (Vaillant)
+      - entity: sensor.arotherm_plus_electricity_used_lifetime_reported
+        name: Electricity total (Vaillant)
+      - entity: sensor.arotherm_plus_cop_this_month_reported_by_heat_pump
+        name: COP this month (Vaillant)
+      - entity: sensor.arotherm_plus_cop_reported_by_heat_pump
+        name: COP lifetime (Vaillant)
+      title: Lifetime counters
+      type: entities
+    - type: markdown
+      content: "{% set h = states('sensor.arotherm_plus_compressor_hours') | float(0) %}{% set n = states('sensor.arotherm_plus_compressor_starts_lifetime') | float(0) %}**Average compressor run per start\
+        \ (lifetime):** {{ (h * 60 / n) | round(0) if n > 0 else '—' }} min  \n**Today:** {{ states('sensor.arotherm_plus_compressor_starts_today') }} starts, average run {{ states('sensor.arotherm_plus_average_run_length_today')\
+        \ if has_value('sensor.arotherm_plus_average_run_length_today') else '—' }} min, last run {{ states('sensor.arotherm_plus_last_run_length') if has_value('sensor.arotherm_plus_last_run_length') else\
+        \ '—' }} min  \n<small>Longer runs and fewer starts are better; under ~30 min per start suggests short-cycling.</small>"
+    type: grid
+  title: Arotherm
+  type: sections
