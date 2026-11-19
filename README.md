@@ -1,5 +1,8 @@
 # Vaillant-AroTherm-Plus-Home-Assistant-Integration
-Vaillant AroTherm Plus Home Assistant Integration
+Vaillant AroTherm Plus Integration for Home Assistant, built completely by Claude. It is fully tested and working on my 5kW unit. This is fully dependent on two pieces - an ebus.de dongle connected to the local Vaillant ebusd, and ebusd. It does not need MQTT, and can make changes to SensoComfort
+
+Dongle - https://ebusd.de/
+Software - https://github.com/john30/ebusd
 
 arotherm_ebusd README - version 0.3.0 (2026-10-28)
 
