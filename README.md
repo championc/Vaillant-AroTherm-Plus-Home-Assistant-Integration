@@ -42,6 +42,16 @@ Tested with: ebusd 26.1 (definitions `ebusd-2.1.x/en`), heat pump SW 0902 / HW 5
 1. Copy the folder `custom_components/arotherm_ebusd` from this repository into your Home Assistant `config/custom_components/` folder, so you end up with `config/custom_components/arotherm_ebusd/manifest.json`.
 2. Restart Home Assistant.
 
+### If ebusd runs as a Home Assistant app (add-on)
+
+If you run ebusd as an app inside Home Assistant (called an add-on before 2026.2) rather than in its own Docker container, the app doesn't open its ports to the network by default, and setup will fail with "Cannot connect to ebusd". To open them:
+
+1. Go to **Settings → Apps → ebusd → Configuration**.
+2. Under **Network**, enter `8888` as the host port for `8888/tcp`. If you want the faster HTTP/JSON connection, also enter `8889` for the HTTP port.
+3. Click **Save**, then restart the ebusd app (or restart Home Assistant).
+
+When you set up the integration, use the IP address of your Home Assistant machine as the ebusd address.
+
 ### Set it up
 
 1. Go to **Settings → Devices & services → Add integration** and search for **aroTHERM ebusd**.
@@ -225,8 +235,8 @@ The [`examples`](examples) folder has the dashboard used on the test system:
 
 | Symptom | Check |
 |---|---|
-| "Cannot connect to ebusd" during setup | Use the address of the machine running ebusd, not the eBUS adapter. Check that port 8888 is reachable from Home Assistant. |
-| "The HTTP/JSON port did not answer" | Start ebusd with `--httpport=8889` (and publish the port if ebusd runs in Docker), or set the HTTP port to 0 to use TCP only. |
+| "Cannot connect to ebusd" during setup | 1. Use the address of the machine running ebusd, not the eBUS adapter. Check that port 8888 is reachable from Home Assistant.<br>2. If ebusd runs as a Home Assistant app (add-on), its ports are closed by default. Open port 8888 under **Settings → Apps → ebusd → Configuration → Network**, then restart the app. See [If ebusd runs as a Home Assistant app](#if-ebusd-runs-as-a-home-assistant-app-add-on). |
+| "The HTTP/JSON port did not answer" | Start ebusd with `--httpport=8889` (and publish the port if ebusd runs in Docker, or open port 8889 in the app's Network settings if it runs as a Home Assistant app), or set the HTTP port to 0 to use TCP only. |
 | Everything unavailable | *ebusd connected* is off. It recovers on its own. |
 | Bus values unavailable, ebusd connected on | The eBUS signal has been lost for more than 2 minutes. Shorter dropouts are ridden through. |
 | One value unavailable | Download diagnostics and look at `messages.<circuit>.<name>.last_error`. Your ebusd definitions may name that message differently. |
