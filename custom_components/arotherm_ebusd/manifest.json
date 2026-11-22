@@ -1,13 +1,13 @@
 {
   "domain": "arotherm_ebusd",
   "name": "aroTHERM ebusd",
-  "codeowners": [
-    "@championc"
-  ],
   "categories": [
     "climate.heat_pumps_air_conditioning",
     "climate.thermostats_heating",
     "energy.meters_monitoring"
+  ],
+  "codeowners": [
+    "@championc"
   ],
   "config_flow": true,
   "dependencies": [],
