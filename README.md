@@ -7,6 +7,9 @@
 
 A **local** Home Assistant integration for the **Vaillant aroTHERM plus** air-to-water heat pump with a **sensoCOMFORT VRC 720** controller. It talks to the eBUS through [ebusd](https://github.com/john30/ebusd): no Vaillant cloud, no myVAILLANT account and no MQTT.
 
+![Example dashboard built with this integration: live temperatures, performance and COP, the VRC 720 heating curve and 24-hour charts](docs/dashboard.png)
+<sub>Example dashboard from the test system (5 kW aroTHERM plus). The dashboard is included in <a href="examples">examples/</a>.</sub>
+
 It gives you:
 
 - **Live readings:** flow and return temperatures, water flow, pressure, compressor speed and modulation, the energy integral, refrigerant pressures and temperatures, fan and pump data.
@@ -229,6 +232,8 @@ All of these are *configuration* entities, so they stay off auto-generated dashb
 ## Example dashboard
 
 The [`examples`](examples) folder has the dashboard used on the test system:
+
+![Example dashboard](docs/dashboard.png)
 
 - `arotherm_dashboard.yaml`: paste into a new dashboard via **⋮ → Edit dashboard → ⋮ → Raw configuration editor**. It needs [apexcharts-card](https://github.com/RomRider/apexcharts-card) (from HACS) and the two cards below.
 - `heatpump-cards.js`: two small custom cards, a weather-compensation curve with the live operating point and a daily COP chart. Copy it to `config/www/heatpump-cards.js` and add `/local/heatpump-cards.js` as a **JavaScript module** under **Settings → Dashboards → ⋮ → Resources**.
