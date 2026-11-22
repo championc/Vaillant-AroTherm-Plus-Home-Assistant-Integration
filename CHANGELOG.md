@@ -1,8 +1,11 @@
 <!--
-arotherm_ebusd CHANGELOG - version 0.3.1 (2026-11-22)
+arotherm_ebusd CHANGELOG - version 0.3.2 (2026-11-22)
 -->
 
 # Changelog
+
+## 0.3.2 (2026-11-22) - icon colour
+- Integration icon now uses Vaillant's teal green (#00917E).
 
 ## 0.3.1 (2026-11-22) - Marketplace readiness
 No change to how the integration works.
