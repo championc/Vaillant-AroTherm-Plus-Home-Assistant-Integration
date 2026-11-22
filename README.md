@@ -1,5 +1,7 @@
 # Vaillant aroTHERM plus – Home Assistant integration (ebusd)
 
+<img src="custom_components/arotherm_ebusd/brand/icon.png" alt="aroTHERM ebusd icon" width="96">
+
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Validate](https://github.com/championc/Vaillant-AroTherm-Plus-Home-Assistant-Integration/actions/workflows/validate.yml/badge.svg)](https://github.com/championc/Vaillant-AroTherm-Plus-Home-Assistant-Integration/actions/workflows/validate.yml)
 

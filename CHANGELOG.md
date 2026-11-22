@@ -1,8 +1,16 @@
 <!--
-arotherm_ebusd CHANGELOG - version 0.3.0 (2026-10-28)
+arotherm_ebusd CHANGELOG - version 0.3.1 (2026-11-22)
 -->
 
 # Changelog
+
+## 0.3.1 (2026-11-22) - Marketplace readiness
+No change to how the integration works.
+
+- Added an integration icon (`brand/icon.png` and `icon@2x.png`), shown in Home Assistant and the Marketplace.
+- Added Marketplace categories: heat pumps, heating and energy monitoring.
+- Removed `strings.json` (custom integrations only need `translations/en.json`).
+- README: how to open the ebusd ports when ebusd runs as a Home Assistant app (add-on).
 
 ## 0.3.0 (2026-10-28) - optional hot water (DHW) support
 For systems where the heat pump also heats a hot water cylinder.

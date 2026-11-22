@@ -4,6 +4,11 @@
   "codeowners": [
     "@championc"
   ],
+  "categories": [
+    "climate.heat_pumps_air_conditioning",
+    "climate.thermostats_heating",
+    "energy.meters_monitoring"
+  ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/championc/Vaillant-AroTherm-Plus-Home-Assistant-Integration",
@@ -11,5 +16,5 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/championc/Vaillant-AroTherm-Plus-Home-Assistant-Integration/issues",
   "requirements": [],
-  "version": "0.3.0"
+  "version": "0.3.1"
 }
